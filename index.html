@@ -27,6 +27,27 @@ body{
 button{
     padding:12px 20px;
     cursor:pointer;
+    background:#3b82f6;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    transition:0.3s;
+}
+
+button:hover{
+    background:#2563eb;
+}
+
+#status{
+    margin-top:20px;
+    padding:10px;
+    border-radius:8px;
+}
+
+.loading{
+    opacity:0.6;
+    cursor:not-allowed;
 }
 </style>
 </head>
@@ -50,56 +71,70 @@ button{
 
 <script type="module">
 
-import { createClient }
-from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// GANTI DENGAN ANON KEY ASLI ANDA dari Project Settings > API
 const supabaseUrl = "https://natsquslyfvknfboghai.supabase.co";
-const supabaseKey = "sb_publishable_zgL7UENIrQl4GRMkeYQlkA_pnKwTBXl";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHNxdXNseWZ2a25mYm9naGFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDEzNzQsImV4cCI6MjA5NTgxNzM3NH0.rM10CTdqmeR2CBeZ6bt28VDljA3XsSaIpdauqu0saes"; // ⚠️ GANTI DENGAN KEY ASLI
 
-const supabase = createClient(
-  supabaseUrl,
-  supabaseKey
-);
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-document
-.getElementById("shareBtn")
-.addEventListener("click", () => {
+const shareBtn = document.getElementById("shareBtn");
+const statusEl = document.getElementById("status");
 
-navigator.geolocation.getCurrentPosition(
-async (position) => {
+shareBtn.addEventListener("click", () => {
+    
+    statusEl.innerText = "Mendapatkan lokasi...";
+    statusEl.style.background = "#334155";
+    shareBtn.disabled = true;
+    shareBtn.classList.add("loading");
 
-const lat = position.coords.latitude;
-const lon = position.coords.longitude;
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            statusEl.innerText = `Menyimpan lokasi: ${lat}, ${lon}...`;
 
-const { error } =
-await supabase
-.from("locations")
-.insert([
-{
-latitude: lat,
-longitude: lon
-}
-]);
+            const { data, error } = await supabase
+                .from("locations")
+                .insert([{ latitude: lat, longitude: lon }])
+                .select();
 
-if(error){
-console.log(error);
-document.getElementById("status").innerText =
-"Gagal menyimpan: " + error.message;
-return;
-}
+            if(error){
+                console.error("Supabase error:", error);
+                statusEl.innerText = "❌ Gagal menyimpan: " + error.message;
+                statusEl.style.background = "#991b1b";
+                shareBtn.disabled = false;
+                shareBtn.classList.remove("loading");
+                return;
+            }
 
-document.getElementById("status").innerText =
-"Lokasi berhasil disimpan.";
-
-},
-() => {
-
-document.getElementById("status").innerText =
-"Izin lokasi ditolak.";
-
-}
-);
-
+            statusEl.innerText = "✅ Lokasi berhasil disimpan!";
+            statusEl.style.background = "#166534";
+            
+            setTimeout(() => {
+                statusEl.innerText = "";
+                statusEl.style.background = "transparent";
+                shareBtn.disabled = false;
+                shareBtn.classList.remove("loading");
+            }, 2000);
+        },
+        (error) => {
+            console.error("Geolocation error:", error);
+            
+            let errorMsg = "Izin lokasi ditolak.";
+            if(error.code === 1) errorMsg = "❌ Izin lokasi ditolak. Aktifkan lokasi di browser.";
+            if(error.code === 2) errorMsg = "❌ Posisi tidak tersedia.";
+            if(error.code === 3) errorMsg = "❌ Timeout mendapatkan lokasi.";
+            
+            statusEl.innerText = errorMsg;
+            statusEl.style.background = "#991b1b";
+            shareBtn.disabled = false;
+            shareBtn.classList.remove("loading");
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
 });
 
 </script>

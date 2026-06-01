@@ -1,17 +1,107 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Ergi</title>
+<meta charset="UTF-8">
+<title>Location Check-In</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#0f172a;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    margin:0;
+}
+
+.card{
+    background:#1e293b;
+    padding:30px;
+    border-radius:15px;
+    text-align:center;
+    max-width:500px;
+}
+
+button{
+    padding:12px 20px;
+    cursor:pointer;
+}
+</style>
 </head>
+
 <body>
 
-<h2>klik untuk masuk</h2>
+<div class="card">
+    <h1>Location Check-In</h1>
 
-<button id="shareBtn">klik Untuk Masuk</button>
+    <p>
+      Jika Anda mengizinkan akses lokasi,
+      koordinat lokasi Anda akan disimpan.
+    </p>
 
-<p id="status"></p>
+    <button id="shareBtn">
+      Bagikan Lokasi
+    </button>
 
-<script type="module" src="app.js"></script>
+    <p id="status"></p>
+</div>
+
+<script type="module">
+
+import { createClient }
+from "https://esm.sh/@supabase/supabase-js@2";
+
+const supabaseUrl = "URL_KAMU";
+const supabaseKey = "ANON_KEY_KAMU";
+
+const supabase = createClient(
+  supabaseUrl,
+  supabaseKey
+);
+
+document
+.getElementById("shareBtn")
+.addEventListener("click", () => {
+
+navigator.geolocation.getCurrentPosition(
+async (position) => {
+
+const lat = position.coords.latitude;
+const lon = position.coords.longitude;
+
+const { error } =
+await supabase
+.from("locations")
+.insert([
+{
+latitude: lat,
+longitude: lon
+}
+]);
+
+if(error){
+document.getElementById("status").innerText =
+"Gagal menyimpan.";
+return;
+}
+
+document.getElementById("status").innerText =
+"Lokasi berhasil disimpan.";
+
+},
+() => {
+
+document.getElementById("status").innerText =
+"Izin lokasi ditolak.";
+
+}
+);
+
+});
+
+</script>
 
 </body>
 </html>

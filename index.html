@@ -82,8 +82,9 @@ longitude: lon
 ]);
 
 if(error){
+console.log(error);
 document.getElementById("status").innerText =
-"Gagal menyimpan.";
+"Gagal menyimpan: " + error.message;
 return;
 }
 

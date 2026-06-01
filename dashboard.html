@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dashboard</title>
+</head>
+
+<body>
+
+<h2>Data Lokasi</h2>
+
+<table border="1">
+<thead>
+<tr>
+<th>ID</th>
+<th>Latitude</th>
+<th>Longitude</th>
+</tr>
+</thead>
+
+<tbody id="data"></tbody>
+
+</table>
+
+<script type="module">
+
+import { createClient }
+from "https://esm.sh/@supabase/supabase-js@2";
+
+const supabase = createClient(
+"URL_KAMU",
+"ANON_KEY_KAMU"
+);
+
+const { data } =
+await supabase
+.from("locations")
+.select("*")
+.order("id");
+
+const tbody =
+document.getElementById("data");
+
+data.forEach(row => {
+
+tbody.innerHTML += `
+<tr>
+<td>${row.id}</td>
+<td>${row.latitude}</td>
+<td>${row.longitude}</td>
+</tr>
+`;
+
+});
+
+</script>
+
+</body>
+</html>

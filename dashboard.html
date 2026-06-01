@@ -2,56 +2,159 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Dashboard</title>
+<title>Dashboard - Data Lokasi</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 20px;
+        margin: 0;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: #1e293b;
+        border-radius: 12px;
+        padding: 20px;
+    }
+    
+    h2 {
+        color: #f1f5f9;
+        margin-top: 0;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #334155;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    th {
+        background: #0f172a;
+        padding: 12px;
+        text-align: left;
+        font-weight: bold;
+    }
+    
+    td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #475569;
+    }
+    
+    tr:hover {
+        background: #475569;
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 40px;
+        font-size: 18px;
+    }
+    
+    .error {
+        background: #991b1b;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .refresh-btn {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-bottom: 20px;
+        font-size: 14px;
+    }
+    
+    .refresh-btn:hover {
+        background: #2563eb;
+    }
+</style>
 </head>
 
 <body>
-
-<h2>Data Lokasi</h2>
-
-<table border="1">
-<thead>
-<tr>
-<th>ID</th>
-<th>Latitude</th>
-<th>Longitude</th>
-</tr>
-</thead>
-
-<tbody id="data"></tbody>
-
-</table>
+<div class="container">
+    <h2>📍 Data Lokasi Terkumpul</h2>
+    <button class="refresh-btn" onclick="location.reload()">🔄 Refresh Data</button>
+    
+    <div id="loading" class="loading">⏳ Memuat data...</div>
+    <div id="errorMsg" style="display:none;"></div>
+    
+    <table border="0" style="display:none;" id="dataTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Waktu Input</th>
+            </tr>
+        </thead>
+        <tbody id="data"></tbody>
+    </table>
+</div>
 
 <script type="module">
 
-import { createClient }
-from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const supabase = createClient(
-"https://natsquslyfvknfboghai.supabase.co",
-"sb_publishable_zgL7UENIrQl4GRMkeYQlkA_pnKwTBXl"
-);
+const supabaseUrl = "https://natsquslyfvknfboghai.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHNxdXNseWZ2a25mYm9naGFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDEzNzQsImV4cCI6MjA5NTgxNzM3NH0.rM10CTdqmeR2CBeZ6bt28VDljA3XsSaIpdauqu0saes"; // ⚠️ GANTI DENGAN KEY ASLI
 
-const { data } =
-await supabase
-.from("locations")
-.select("*")
-.order("id");
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const tbody = document.getElementById("data");
+const loadingDiv = document.getElementById("loading");
+const errorDiv = document.getElementById("errorMsg");
+const dataTable = document.getElementById("dataTable");
 
-const tbody =
-document.getElementById("data");
+async function loadData() {
+    try {
+        loadingDiv.style.display = "block";
+        errorDiv.style.display = "none";
+        dataTable.style.display = "none";
+        
+        const { data, error } = await supabase
+            .from("locations")
+            .select("*")
+            .order("id", { ascending: false }); // Tampilkan terbaru di atas
+        
+        if(error) throw error;
+        
+        if(!data || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center">📭 Belum ada data lokasi</td></tr>`;
+        } else {
+            tbody.innerHTML = "";
+            data.forEach(row => {
+                const waktu = row.created_at ? new Date(row.created_at).toLocaleString('id-ID') : '-';
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${row.id}</td>
+                        <td>${row.latitude}</td>
+                        <td>${row.longitude}</td>
+                        <td>${waktu}</td>
+                    </tr>
+                `;
+            });
+        }
+        
+        dataTable.style.display = "table";
+        
+    } catch(err) {
+        console.error("Error loading data:", err);
+        errorDiv.innerHTML = `<div class="error">❌ Gagal memuat data: ${err.message}</div>`;
+        errorDiv.style.display = "block";
+    } finally {
+        loadingDiv.style.display = "none";
+    }
+}
 
-data.forEach(row => {
-
-tbody.innerHTML += `
-<tr>
-<td>${row.id}</td>
-<td>${row.latitude}</td>
-<td>${row.longitude}</td>
-</tr>
-`;
-
-});
+loadData();
 
 </script>
 

